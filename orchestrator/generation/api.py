@@ -2,7 +2,7 @@ from ninja import Router, Schema
 import logging
 
 logger = logging.getLogger(__name__)
-# CI/CD Test trigger comment
+# CI/CD Test trigger comment 2
 from typing import Dict, Any
 from .services.llm_service import llm_service
 from .services.project_service import project_service
