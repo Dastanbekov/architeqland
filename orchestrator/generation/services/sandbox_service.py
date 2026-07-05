@@ -96,14 +96,28 @@ class SandboxService:
         )
         os.makedirs(os.path.dirname(repo_path), exist_ok=True)
 
-        proc = await asyncio.create_subprocess_exec(
-            "git", "clone", authed_url, repo_path,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-        _, stderr = await asyncio.wait_for(proc.communicate(), timeout=60)
-        if proc.returncode != 0:
-            raise RuntimeError(f"git clone failed: {stderr.decode()}")
+        for attempt in range(5):
+            # If repo_path exists from a previous failed clone attempt, remove it
+            if os.path.exists(repo_path):
+                import shutil
+                shutil.rmtree(repo_path)
+
+            proc = await asyncio.create_subprocess_exec(
+                "git", "clone", authed_url, repo_path,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            _, stderr = await asyncio.wait_for(proc.communicate(), timeout=60)
+            if proc.returncode != 0:
+                raise RuntimeError(f"git clone failed: {stderr.decode()}")
+            
+            # Check if template is populated
+            if os.path.exists(os.path.join(repo_path, "backend")):
+                break
+            
+            logger.info(f"Repo cloned but looks empty. Waiting for GitHub template to populate... (attempt {attempt+1}/5)")
+            await asyncio.sleep(3)
+
 
     async def _write_docker_compose(self, repo_path: str, project_name: str, subdomain: str):
         """Write a docker-compose.yml that hooks into Traefik with the sandbox subdomain."""
