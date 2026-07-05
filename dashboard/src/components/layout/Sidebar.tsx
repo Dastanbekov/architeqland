@@ -1,6 +1,6 @@
 import { LogOut } from 'lucide-react';
 import { apiFetch, setAccessToken } from '../../services/api';
-import { Project } from '../../services/projectsApi';
+import type { Project } from '../../services/projectsApi';
 
 interface SidebarProps {
   projects?: Project[];

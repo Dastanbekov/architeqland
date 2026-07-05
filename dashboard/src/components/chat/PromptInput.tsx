@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Sparkles, ArrowUp } from 'lucide-react';
-import { Project } from '../../services/projectsApi';
+import type { Project } from '../../services/projectsApi';
 
 interface PromptInputProps {
   onGenerate: (prompt: string) => void;

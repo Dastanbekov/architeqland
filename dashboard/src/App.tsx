@@ -4,7 +4,8 @@ import { PromptInput } from './components/chat/PromptInput';
 import { ProjectView } from './components/project/ProjectView';
 import { Login } from './components/auth/Login';
 import { apiFetch, getAccessToken } from './services/api';
-import { Project, listProjects, createProject } from './services/projectsApi';
+import type { Project } from './services/projectsApi';
+import { listProjects, createProject } from './services/projectsApi';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);

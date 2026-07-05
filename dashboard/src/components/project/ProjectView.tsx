@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Send, Loader2, ExternalLink, RefreshCw } from 'lucide-react';
-import { Project, ChatMessage, getProjectMessages, connectProjectWebSocket } from '../../services/projectsApi';
+import type { Project } from '../../services/projectsApi';
+import { getProjectMessages, connectProjectWebSocket } from '../../services/projectsApi';
 
 interface ProjectViewProps {
   project: Project;
