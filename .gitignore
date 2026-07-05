@@ -1,0 +1,25 @@
+# Environments
+venv/
+env/
+.env
+.venv/
+orchestrator/venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.sqlite3
+
+# Node / JS
+node_modules/
+dist/
+build/
+.npm/
+.next/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

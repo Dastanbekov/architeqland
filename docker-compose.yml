@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+  traefik:
+    image: "traefik:v2.10"
+    container_name: "traefik"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - architeq_network
+
+  orchestrator:
+    build: 
+      context: ./orchestrator
+      dockerfile: Dockerfile
+    container_name: "architeq_orchestrator"
+    restart: always
+    environment:
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.orchestrator.rule=Host(`api.architeq.tech`)"
+      - "traefik.http.routers.orchestrator.entrypoints=web"
+    networks:
+      - architeq_network
+
+networks:
+  architeq_network:
+    name: architeq_network
+    driver: bridge
