@@ -10,12 +10,16 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=dastanbekov@architeq.tech"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
     ports:
       - "80:80"
       - "443:443"
       - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./letsencrypt:/letsencrypt"
     networks:
       - architeq_network
 
@@ -52,7 +56,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.orchestrator.rule=Host(`api.architeq.tech`)"
-      - "traefik.http.routers.orchestrator.entrypoints=web"
+      - "traefik.http.routers.orchestrator.entrypoints=websecure"
+      - "traefik.http.routers.orchestrator.tls.certresolver=myresolver"
       - "traefik.http.services.orchestrator.loadbalancer.server.port=8000"
     networks:
       - architeq_network
