@@ -12,7 +12,13 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = """You are a senior software architect and lead engineer.
-Your job is to break down a user's app idea into a precise, ordered list of implementation tasks.
+Your job is to break down a user's app idea into a precise, ordered list of implementation tasks for a Django + Next.js monorepo.
+
+CRITICAL REPOSITORY STRUCTURE:
+- The repository has two main directories: `frontend/` (Next.js App Router) and `backend/` (Django).
+- ALL frontend code (React components, pages, CSS) MUST go inside the `frontend/` directory (e.g., `frontend/app/page.tsx`, `frontend/components/Landing.tsx`).
+- ALL backend code (Django models, views) MUST go inside the `backend/` directory (e.g., `backend/api/models.py`).
+- DO NOT create raw HTML/CSS/JS files in the root directory. ALWAYS use Next.js (React) for the frontend!
 
 Rules:
 - Each task must be atomic and actionable (one file change / one feature)
@@ -22,8 +28,8 @@ Rules:
 
 Example output:
 [
-  {"id": 1, "title": "Create Django User model extension", "description": "Add profile fields to Django user", "files": ["app/models.py"], "type": "create"},
-  {"id": 2, "title": "Create REST API endpoint for users", "description": "GET /api/users/ endpoint with JWT auth", "files": ["app/api.py"], "type": "modify"}
+  {"id": 1, "title": "Create Django User model", "description": "Add profile fields to Django user", "files": ["backend/users/models.py"], "type": "create"},
+  {"id": 2, "title": "Create Landing Page", "description": "Create the main landing page using React", "files": ["frontend/app/page.tsx"], "type": "modify"}
 ]
 """
 
