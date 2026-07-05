@@ -108,7 +108,6 @@ class SandboxService:
     async def _write_docker_compose(self, repo_path: str, project_name: str, subdomain: str):
         """Write a docker-compose.yml that hooks into Traefik with the sandbox subdomain."""
         compose_content = textwrap.dedent(f"""\
-            version: "3.8"
             services:
               backend:
                 build: ./backend
@@ -160,7 +159,7 @@ class SandboxService:
         )
         stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=600)
         if proc.returncode != 0:
-            raise RuntimeError(f"docker-compose failed: {stderr.decode()}")
+            raise RuntimeError(f"docker-compose failed:\nSTDERR: {stderr.decode()}\nSTDOUT: {stdout.decode()}")
 
 
 sandbox_service = SandboxService()
