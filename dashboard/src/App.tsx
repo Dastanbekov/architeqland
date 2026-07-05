@@ -13,8 +13,8 @@ function App() {
     setStatus('Initializing Django orchestrator...');
     
     try {
-      // Pointing to local Django Orchestrator via Django Ninja
-      const response = await fetch('http://localhost:8000/api/apps/generate', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/api/apps/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
