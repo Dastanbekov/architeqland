@@ -15,15 +15,15 @@ class LoginSchema(BaseModel):
 class TokenSchema(BaseModel):
     access: str
 
+from django.http import HttpResponse
+
 @router.post("/login", response=TokenSchema)
-def login(request, payload: LoginSchema):
+def login(request, payload: LoginSchema, response: HttpResponse):
     user = authenticate(username=payload.username, password=payload.password)
     if user is None:
         raise HttpError(401, "Invalid credentials")
     
     refresh = RefreshToken.for_user(user)
-    
-    response = router.api.create_response(request, {"access": str(refresh.access_token)})
     
     # Set the refresh token in an HttpOnly cookie
     max_age = int(settings.NINJA_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds())
@@ -39,7 +39,7 @@ def login(request, payload: LoginSchema):
         secure=not settings.DEBUG,  # True in production
         path='/api/apps/auth/refresh'
     )
-    return response
+    return {"access": str(refresh.access_token)}
 
 @router.post("/refresh", response=TokenSchema)
 def refresh_token(request):
@@ -56,7 +56,6 @@ def refresh_token(request):
         raise HttpError(401, "Invalid refresh token")
 
 @router.post("/logout")
-def logout(request):
-    response = router.api.create_response(request, {"message": "Logged out successfully"})
+def logout(request, response: HttpResponse):
     response.delete_cookie(settings.NINJA_JWT['AUTH_COOKIE_NAME'], path='/api/apps/auth/refresh')
-    return response
+    return {"message": "Logged out successfully"}
