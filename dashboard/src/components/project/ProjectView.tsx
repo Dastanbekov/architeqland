@@ -5,6 +5,7 @@ import { getProjectMessages, connectProjectWebSocket } from '../../services/proj
 
 interface ProjectViewProps {
   project: Project;
+  initialPrompt?: string;
   onBack: () => void;
 }
 
@@ -15,7 +16,7 @@ interface DisplayMessage {
   isThinking?: boolean;
 }
 
-export function ProjectView({ project, onBack }: ProjectViewProps) {
+export function ProjectView({ project, initialPrompt, onBack }: ProjectViewProps) {
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
   const [input, setInput] = useState('');
   const [status, setStatus] = useState(project.status);
@@ -28,16 +29,20 @@ export function ProjectView({ project, onBack }: ProjectViewProps) {
 
   // Load history and connect WebSocket
   useEffect(() => {
-    getProjectMessages(project.id).then((msgs) => {
-      setMessages(msgs.map((m) => ({ id: m.id, role: m.role, content: m.content })));
-    });
+    // Show initial prompt immediately as first message
+    if (initialPrompt) {
+      setMessages([{ id: 'init-user', role: 'user', content: initialPrompt }]);
+      setIsAgentWorking(true);
+    } else {
+      getProjectMessages(project.id).then((msgs) => {
+        setMessages(msgs.map((m) => ({ id: m.id, role: m.role, content: m.content })));
+      });
+    }
 
     const ws = connectProjectWebSocket(project.id, handleWsMessage);
     wsRef.current = ws;
 
-    return () => {
-      ws.close();
-    };
+    return () => { ws.close(); };
   }, [project.id]);
 
   useEffect(() => {

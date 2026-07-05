@@ -10,6 +10,7 @@ import { listProjects, createProject } from './services/projectsApi';
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeProject, setActiveProject] = useState<Project | null>(null);
+  const [initialPrompt, setInitialPrompt] = useState<string>('');
   const [projects, setProjects] = useState<Project[]>([]);
   const [isCreating, setIsCreating] = useState(false);
 
@@ -43,6 +44,7 @@ function App() {
     try {
       const project = await createProject(prompt);
       setProjects((prev) => [project, ...prev]);
+      setInitialPrompt(prompt);
       setActiveProject(project);
     } catch (e) {
       console.error('Failed to create project:', e);
@@ -60,7 +62,8 @@ function App() {
     return (
       <ProjectView
         project={activeProject}
-        onBack={() => setActiveProject(null)}
+        initialPrompt={initialPrompt}
+        onBack={() => { setActiveProject(null); setInitialPrompt(''); }}
       />
     );
   }
