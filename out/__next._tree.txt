@@ -1,0 +1,10 @@
+:HL["/_next/static/chunks/3qfe8ph-uxrz-.css","style"]
+:HL["/_next/static/media/caa3a2e1cccd8315-s.p.0wgildi0cnwt9.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap","style"]
+:HL["https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg","image"]
+:HL["https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg","image"]
+:HL["https://upload.wikimedia.org/wikipedia/commons/5/5e/Vercel_logo_black.svg","image"]
+:HL["https://upload.wikimedia.org/wikipedia/commons/2/29/Postgresql_elephant.svg","image"]
+:HL["https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg","image"]
+:HL["https://upload.wikimedia.org/wikipedia/commons/d/d9/Node.js_logo.svg","image"]
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}},"staleTime":300,"buildId":"ntKFHJIcPVrWCwA2PsBQK"}

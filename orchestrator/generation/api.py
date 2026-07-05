@@ -1,14 +1,14 @@
 from ninja import Router, Schema
 import logging
-
-logger = logging.getLogger(__name__)
-# CI/CD Test trigger comment 2
 from typing import Dict, Any
+from ninja_jwt.authentication import JWTAuth
+from .auth import router as auth_router
 from .services.llm_service import llm_service
 from .services.project_service import project_service
 from .services.docker_service import docker_service
 
 router = Router()
+router.add_router("/auth", auth_router)
 
 class GenerateRequest(Schema):
     prompt: str
@@ -19,7 +19,7 @@ class GenerateResponse(Schema):
     status: str
     details: Dict[str, Any]
 
-@router.post("/generate", response=GenerateResponse)
+@router.post("/generate", response=GenerateResponse, auth=JWTAuth())
 async def generate_app(request, data: GenerateRequest):
     """
     Accepts a user prompt, connects to Deepseek to generate a structured app,

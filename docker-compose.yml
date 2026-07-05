@@ -19,14 +19,34 @@ services:
     networks:
       - architeq_network
 
+  db:
+    image: postgres:16-alpine
+    container_name: architeq_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-architeq}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-architeq_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-architeq}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - architeq_network
+
   orchestrator:
     build: 
       context: ./orchestrator
       dockerfile: Dockerfile
     container_name: "architeq_orchestrator"
     restart: always
+    depends_on:
+      - db
     environment:
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - DB_HOST=db
+      - DB_NAME=${POSTGRES_DB:-architeq}
+      - DB_USER=${POSTGRES_USER:-architeq}
+      - DB_PASS=${POSTGRES_PASSWORD:-architeq_pass}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-super-secret-key-change-in-prod}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     labels:
@@ -36,6 +56,9 @@ services:
       - "traefik.http.services.orchestrator.loadbalancer.server.port=8000"
     networks:
       - architeq_network
+
+volumes:
+  postgres_data:
 
 networks:
   architeq_network:
