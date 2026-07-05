@@ -60,7 +60,7 @@ services:
       - DB_PASS=${POSTGRES_PASSWORD:-architeq_pass}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-super-secret-key-change-in-prod}
       - REDIS_HOST=redis
-      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GH_TOKEN=${GH_TOKEN}
       - GITHUB_ORG=${GITHUB_ORG:-Dastanbekov}
       - SANDBOX_DOMAIN=${SANDBOX_DOMAIN:-sandbox.architeq.tech}
       - SANDBOX_BASE_DIR=/sandboxes

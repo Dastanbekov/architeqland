@@ -129,7 +129,7 @@ NINJA_JWT = {
 
 # Project sandbox settings
 SANDBOX_DOMAIN = os.environ.get('SANDBOX_DOMAIN', 'sandbox.architeq.tech')
-GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
+GITHUB_TOKEN = os.environ.get('GH_TOKEN', '')
 GITHUB_ORG = os.environ.get('GITHUB_ORG', 'Dastanbekov')
 DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY', '')
 DEEPSEEK_BASE_URL = 'https://api.deepseek.com/v1'
