@@ -1,20 +1,15 @@
 import React, { useState } from 'react';
 import { Sparkles, ArrowUp } from 'lucide-react';
+import { Project } from '../../services/projectsApi';
 
 interface PromptInputProps {
   onGenerate: (prompt: string) => void;
   isLoading: boolean;
+  projects?: Project[];
+  onProjectSelect?: (project: Project) => void;
 }
 
-const MOCK_APPS = [
-  { title: 'B2B Distributor Landing Page', desc: 'Lets create landing page for B2B distributors project that we have, I have shared more info in the presentation. like this happy robot style...', views: 39, date: 'updated 10 days ago' },
-  { title: 'AI GTM', desc: 'Arashan - Natural Products from Central Asia. Coming from Kyrgyzstan, a unique country in Central Asia, we wanted to continue the family...', views: 916, date: 'updated about 1 month ago' },
-  { title: 'NEW Premium Truck Detailing', desc: '', views: 201, date: 'updated about 1 month ago' },
-  { title: 'Premium Truck Detailing Platform', desc: 'My goal is to build an to end-to-end AI-native software for truck detailing', views: 0, date: 'just now' },
-  { title: 'Premium Printing CRM', desc: 'Build a CRM application', views: 0, date: 'just now' }
-];
-
-export function PromptInput({ onGenerate, isLoading }: PromptInputProps) {
+export function PromptInput({ onGenerate, isLoading, projects = [], onProjectSelect }: PromptInputProps) {
   const [prompt, setPrompt] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -66,21 +61,35 @@ export function PromptInput({ onGenerate, isLoading }: PromptInputProps) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {MOCK_APPS.map((app, i) => (
-              <div key={i} className="bg-[#1a1a1a] border border-white/5 rounded-xl p-5 hover:border-white/20 transition-colors cursor-pointer flex flex-col justify-between h-[180px]">
+            {projects.length === 0 ? (
+              <div className="col-span-3 text-center py-12 text-white/20 text-sm">
+                Ещё нет проектов. Опиши что хочешь создать выше!
+              </div>
+            ) : projects.map((p) => (
+              <div
+                key={p.id}
+                onClick={() => onProjectSelect?.(p)}
+                className="bg-[#1a1a1a] border border-white/5 rounded-xl p-5 hover:border-white/20 transition-colors cursor-pointer flex flex-col justify-between h-[180px]"
+              >
                 <div>
-                  <h3 className="text-white font-medium mb-3 line-clamp-1">{app.title}</h3>
-                  <p className="text-[13px] leading-relaxed text-white/50 line-clamp-3">{app.desc}</p>
+                  <h3 className="text-white font-medium mb-3 line-clamp-1">{p.display_name || p.name}</h3>
+                  <p className="text-[13px] leading-relaxed text-white/50 line-clamp-3">{p.subdomain}</p>
                 </div>
                 <div className="flex items-center justify-between mt-4">
                   <div className="flex items-center gap-1.5 text-[11px] text-white/40">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    {app.views}
+                    <div className={`w-1.5 h-1.5 rounded-full ${
+                      p.status === 'live' ? 'bg-emerald-500' :
+                      p.status === 'error' ? 'bg-red-500' : 'bg-amber-400'
+                    }`} />
+                    {p.status}
                   </div>
-                  <span className="text-[11px] text-white/40">{app.date}</span>
+                  <span className="text-[11px] text-white/40">
+                    {new Date(p.created_at).toLocaleDateString()}
+                  </span>
                 </div>
               </div>
             ))}
+          </div>
           </div>
         </div>
       </div>

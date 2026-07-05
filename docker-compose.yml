@@ -36,6 +36,13 @@ services:
     networks:
       - architeq_network
 
+  redis:
+    image: redis:7-alpine
+    container_name: architeq_redis
+    restart: always
+    networks:
+      - architeq_network
+
   orchestrator:
     build: 
       context: ./orchestrator
@@ -44,6 +51,7 @@ services:
     restart: always
     depends_on:
       - db
+      - redis
     environment:
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
       - DB_HOST=db
@@ -51,8 +59,14 @@ services:
       - DB_USER=${POSTGRES_USER:-architeq}
       - DB_PASS=${POSTGRES_PASSWORD:-architeq_pass}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-super-secret-key-change-in-prod}
+      - REDIS_HOST=redis
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GITHUB_ORG=${GITHUB_ORG:-Dastanbekov}
+      - SANDBOX_DOMAIN=${SANDBOX_DOMAIN:-sandbox.architeq.tech}
+      - SANDBOX_BASE_DIR=/sandboxes
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - /sandboxes:/sandboxes
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.orchestrator.rule=Host(`api.architeq.tech`)"

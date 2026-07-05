@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -38,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
+    'channels',
     'generation',
     'ninja_jwt',
 ]
@@ -80,6 +82,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
+ASGI_APPLICATION = 'config.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [(os.environ.get('REDIS_HOST', 'redis'), 6379)],
+        },
+    },
+}
 
 
 # Database
@@ -114,6 +126,14 @@ NINJA_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
     'AUTH_COOKIE_NAME': 'refresh_token',
 }
+
+# Project sandbox settings
+SANDBOX_DOMAIN = os.environ.get('SANDBOX_DOMAIN', 'sandbox.architeq.tech')
+GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
+GITHUB_ORG = os.environ.get('GITHUB_ORG', 'Dastanbekov')
+DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY', '')
+DEEPSEEK_BASE_URL = 'https://api.deepseek.com/v1'
+SANDBOX_BASE_DIR = os.environ.get('SANDBOX_BASE_DIR', '/sandboxes')
 
 
 # Password validation

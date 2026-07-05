@@ -1,67 +1,52 @@
 import { useState, useEffect } from 'react';
 import { Sidebar } from './components/layout/Sidebar';
 import { PromptInput } from './components/chat/PromptInput';
-import { AppPreview } from './components/preview/AppPreview';
+import { ProjectView } from './components/project/ProjectView';
 import { Login } from './components/auth/Login';
 import { apiFetch, getAccessToken } from './services/api';
+import { Project, listProjects, createProject } from './services/projectsApi';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [status, setStatus] = useState('');
+  const [activeProject, setActiveProject] = useState<Project | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isCreating, setIsCreating] = useState(false);
 
-  // Check auth state on mount by attempting a refresh
+  // Check auth state on mount
   useEffect(() => {
     const checkAuth = async () => {
       if (getAccessToken()) {
         setIsAuthenticated(true);
         return;
       }
-      
       try {
         const response = await apiFetch('/api/apps/auth/refresh', { method: 'POST' });
-        if (response.ok) {
-          setIsAuthenticated(true);
-        }
-      } catch (e) {
-        // Silently fail, user needs to login
+        if (response.ok) setIsAuthenticated(true);
+      } catch {
+        // user needs to login
       }
     };
     checkAuth();
   }, []);
 
-  const handleGenerate = async (prompt: string) => {
-    setIsLoading(true);
-    setStatus('Initializing Django orchestrator...');
-    
+  // Load projects after auth
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    listProjects()
+      .then(setProjects)
+      .catch(() => setProjects([]));
+  }, [isAuthenticated]);
+
+  const handleNewProject = async (prompt: string) => {
+    setIsCreating(true);
     try {
-      const response = await apiFetch(`/api/apps/generate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ prompt }),
-      });
-
-      if (response.status === 401) {
-        setIsAuthenticated(false);
-        throw new Error('Unauthorized');
-      }
-
-      if (!response.ok) {
-        throw new Error('Generation failed');
-      }
-
-      const data = await response.json();
-      
-      setPreviewUrl(data.url);
-      setStatus('Deployed successfully!');
-    } catch (error) {
-      console.error(error);
-      setStatus('Error deploying application.');
+      const project = await createProject(prompt);
+      setProjects((prev) => [project, ...prev]);
+      setActiveProject(project);
+    } catch (e) {
+      console.error('Failed to create project:', e);
     } finally {
-      setIsLoading(false);
+      setIsCreating(false);
     }
   };
 
@@ -69,11 +54,21 @@ function App() {
     return <Login onLoginSuccess={() => setIsAuthenticated(true)} />;
   }
 
+  // If a project is open, show ProjectView (full screen, no sidebar)
+  if (activeProject) {
+    return (
+      <ProjectView
+        project={activeProject}
+        onBack={() => setActiveProject(null)}
+      />
+    );
+  }
+
+  // Default: home screen with project list
   return (
-    <div className="flex h-screen bg-[#0a0a0f] text-white overflow-hidden font-sans">
-      <Sidebar />
-      <PromptInput onGenerate={handleGenerate} isLoading={isLoading} />
-      <AppPreview url={previewUrl} isLoading={isLoading} status={status} />
+    <div className="flex h-screen bg-[#0a0a0a] text-white overflow-hidden font-sans">
+      <Sidebar onProjectSelect={setActiveProject} projects={projects} />
+      <PromptInput onGenerate={handleNewProject} isLoading={isCreating} />
     </div>
   );
 }
