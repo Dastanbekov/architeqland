@@ -33,6 +33,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.orchestrator.rule=Host(`api.architeq.tech`)"
       - "traefik.http.routers.orchestrator.entrypoints=web"
+      - "traefik.http.services.orchestrator.loadbalancer.server.port=8000"
     networks:
       - architeq_network
 
