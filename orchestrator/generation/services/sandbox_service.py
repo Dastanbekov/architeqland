@@ -158,7 +158,9 @@ class SandboxService:
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-        await asyncio.wait_for(proc.communicate(), timeout=600)
+        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=600)
+        if proc.returncode != 0:
+            raise RuntimeError(f"docker-compose failed: {stderr.decode()}")
 
 
 sandbox_service = SandboxService()
