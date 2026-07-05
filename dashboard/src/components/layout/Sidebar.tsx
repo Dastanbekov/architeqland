@@ -1,4 +1,3 @@
-import React from 'react';
 import { LayoutDashboard, Settings, History, PlusSquare } from 'lucide-react';
 
 export function Sidebar() {

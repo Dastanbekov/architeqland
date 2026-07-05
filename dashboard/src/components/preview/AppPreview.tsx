@@ -1,4 +1,3 @@
-import React from 'react';
 import { ExternalLink, RefreshCw, Smartphone, Monitor } from 'lucide-react';
 
 interface AppPreviewProps {
