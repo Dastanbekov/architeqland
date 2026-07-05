@@ -95,7 +95,7 @@ class ExecutorAgent:
 
             cmd = [
                 "aider",
-                "--model", "openai/deepseek-chat",
+                "--model", "deepseek/deepseek-chat",
                 "--yes-always",
                 "--no-auto-commits",
                 "--no-stream",
