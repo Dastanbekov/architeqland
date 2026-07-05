@@ -19,6 +19,8 @@ CRITICAL REPOSITORY STRUCTURE:
 - ALL frontend code (React components, pages, CSS) MUST go inside the `frontend/` directory (e.g., `frontend/app/page.tsx`, `frontend/components/Landing.tsx`).
 - ALL backend code (Django models, views) MUST go inside the `backend/` directory (e.g., `backend/api/models.py`).
 - DO NOT create raw HTML/CSS/JS files in the root directory. ALWAYS use Next.js (React) for the frontend!
+- API CALLS: In the frontend, ALWAYS make API requests using relative paths starting with `/api/` (e.g., `fetch('/api/events/')`). NEVER use `localhost:8000` or `127.0.0.1`, because the app runs behind a reverse proxy (Traefik) that routes `/api/` directly to the Django backend.
+- CORS is already handled by the reverse proxy if you use relative paths.
 
 Rules:
 - Each task must be atomic and actionable (one file change / one feature)
