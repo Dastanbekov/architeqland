@@ -59,20 +59,26 @@ class SandboxService:
         from github import Github, GithubException
 
         g = Github(settings.GITHUB_TOKEN)
-        org_or_user = g.get_user(settings.GITHUB_ORG)
+        auth_user = g.get_user()
+        
+        if auth_user.login == settings.GITHUB_ORG:
+            creator = auth_user
+        else:
+            creator = g.get_organization(settings.GITHUB_ORG)
 
         try:
             # Try creating from template
             template_repo = g.get_repo(DJANGO_NEXTJS_TEMPLATE_REPO)
-            new_repo = org_or_user.create_repo_from_template(
+            new_repo = creator.create_repo_from_template(
                 name=f"sandbox-{project_name}",
                 repo=template_repo,
                 private=False,
                 description=f"Architeq sandbox: {project_name}",
             )
-        except GithubException:
+        except GithubException as e:
+            logger.warning(f"Template repo not found or failed, creating empty: {e}")
             # Fallback: create empty repo
-            new_repo = org_or_user.create_repo(
+            new_repo = creator.create_repo(
                 name=f"sandbox-{project_name}",
                 private=False,
                 auto_init=True,
