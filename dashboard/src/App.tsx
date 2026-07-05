@@ -69,7 +69,12 @@ function App() {
   return (
     <div className="flex h-screen bg-[#0a0a0a] text-white overflow-hidden font-sans">
       <Sidebar onProjectSelect={setActiveProject} projects={projects} />
-      <PromptInput onGenerate={handleNewProject} isLoading={isCreating} />
+      <PromptInput
+        onGenerate={handleNewProject}
+        isLoading={isCreating}
+        projects={projects}
+        onProjectSelect={setActiveProject}
+      />
     </div>
   );
 }
