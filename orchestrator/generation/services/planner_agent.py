@@ -52,7 +52,7 @@ class PlannerAgent:
 
         try:
             response = await self.client.chat.completions.create(
-                model="deepseek-chat",  # DeepSeek V3 Pro
+                model="deepseek-v4-pro",
                 messages=[
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user", "content": f"App idea: {prompt}"},
