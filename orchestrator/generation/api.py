@@ -1,6 +1,7 @@
 from ninja import Router, Schema
 from typing import Dict, Any
 from .services.llm_service import llm_service
+from .services.project_service import project_service
 from .services.docker_service import docker_service
 
 router = Router()
@@ -23,8 +24,11 @@ async def generate_app(request, data: GenerateRequest):
     # Step 1: Generate Project Structure (Deepseek Async)
     project_data = await llm_service.generate_project_structure(data.prompt)
     
-    # Step 2: Deploy Container (Docker + Traefik Labels, sync call wrapper)
-    deployment_info = docker_service.deploy_app(project_data)
+    # Step 2: Write Files and Generate Dockerfile
+    project_id, project_dir = project_service.create_project_files(project_data)
+    
+    # Step 3: Deploy Container (Docker + Traefik Labels)
+    deployment_info = docker_service.build_and_deploy_app(project_id, project_dir)
     
     return GenerateResponse(
         project_id=deployment_info["project_id"],

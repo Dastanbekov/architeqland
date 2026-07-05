@@ -12,10 +12,12 @@ class LLMService:
 
     async def generate_project_structure(self, prompt: str) -> dict:
         system_prompt = (
-            "You are an expert AI software architect. "
-            "Based on the user's prompt, design the web application architecture. "
+            "You are an expert AI software architect and full-stack developer. "
+            "Based on the user's prompt, generate a completely functional Static Web Application. "
             "You MUST output raw, valid JSON only, with no markdown formatting or extra text. "
-            "Required JSON schema: { 'appName': 'string', 'framework': 'string', 'description': 'string', 'files': [ { 'path': 'string', 'content': 'string' } ] }"
+            "The app MUST be built with pure HTML, CSS, and JS (no build tools like React or Vite). "
+            "You must include an 'index.html' at the root of the 'files' array. "
+            "Required JSON schema: { 'appName': 'string', 'framework': 'html', 'description': 'string', 'files': [ { 'path': 'string', 'content': 'string' } ] }"
         )
 
         try:
