@@ -90,7 +90,6 @@ export function PromptInput({ onGenerate, isLoading, projects = [], onProjectSel
               </div>
             ))}
           </div>
-          </div>
         </div>
       </div>
     </div>
