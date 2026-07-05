@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Sidebar } from './components/layout/Sidebar';
 import { PromptInput } from './components/chat/PromptInput';
 import { AppPreview } from './components/preview/AppPreview';
