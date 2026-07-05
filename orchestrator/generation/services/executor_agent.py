@@ -116,6 +116,7 @@ class ExecutorAgent:
                     **os.environ, 
                     "OPENAI_API_KEY": settings.DEEPSEEK_API_KEY,
                     "OPENAI_API_BASE": settings.DEEPSEEK_BASE_URL,
+                    "DEEPSEEK_API_KEY": settings.DEEPSEEK_API_KEY,
                 },
             )
             stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=300)
