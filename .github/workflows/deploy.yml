@@ -1,0 +1,35 @@
+name: Deploy Backend to Droplet
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'dashboard/**'
+      - 'public/**'
+      - 'src/**'
+      - 'next.config.ts'
+      - 'tailwind.config.ts'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'README.md'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to DigitalOcean Droplet via SSH
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.DROPLET_HOST }}
+        username: ${{ secrets.DROPLET_USERNAME }}
+        key: ${{ secrets.DROPLET_SSH_KEY }}
+        script: |
+          cd ~/architeqland
+          git reset --hard origin/main
+          git pull origin main
+          docker-compose --env-file .env up -d --build
