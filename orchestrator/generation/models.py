@@ -17,6 +17,9 @@ class Project(models.Model):
     github_repo_url = models.URLField(blank=True)
     subdomain = models.CharField(max_length=127, blank=True)  # {name}.sandbox.architeq.tech
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.CREATING)
+    # Agent processing state — survives page refresh
+    is_processing = models.BooleanField(default=False)
+    processing_step = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

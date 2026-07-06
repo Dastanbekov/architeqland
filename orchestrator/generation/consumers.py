@@ -33,13 +33,16 @@ class ProjectConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
 
-        # Send current project status on connect
+        # Send current project status on connect — including agent processing state
+        # so the frontend can restore the UI correctly after a page refresh
         await self.send(json.dumps({
             "type": "project_status",
             "project_id": str(project.id),
             "status": project.status,
             "url": project.url,
             "name": project.name,
+            "is_processing": project.is_processing,
+            "processing_step": project.processing_step,
         }))
 
     async def disconnect(self, close_code):
@@ -67,14 +70,16 @@ class ProjectConsumer(AsyncWebsocketConsumer):
             # Save user message to DB
             await self._save_message(self.project_id, "user", prompt)
 
+            # Mark project as processing in DB (survives page refresh)
+            await self._set_processing(self.project_id, True, "🧠 Планирую задачи...")
+
             # Notify client: agent is thinking
             await self.send(json.dumps({
                 "type": "agent_thinking",
-                "message": "Агент анализирует задачу...",
+                "message": "🧠 Планирую задачи...",
             }))
 
             # Launch the full agent pipeline in background
-            from channels.db import database_sync_to_async
             import asyncio
             asyncio.create_task(self._run_agent_pipeline(self.project_id, prompt))
 
@@ -89,32 +94,44 @@ class ProjectConsumer(AsyncWebsocketConsumer):
 
         try:
             # Step 1: Planner breaks prompt into tasks
+            step = "🧠 Планирую задачи..."
+            await self._set_processing(project_id, True, step)
             await self.channel_layer.group_send(self.group_name, {
                 "type": "agent_update",
                 "event": "planning",
-                "message": "🧠 Планирую задачи...",
+                "message": step,
             })
             tasks = await planner_agent.plan(prompt, project_id)
 
             # Step 2: Executor implements each task
+            step = f"⚙️ Начинаю реализацию ({len(tasks)} задач)..."
+            await self._set_processing(project_id, True, step)
             await self.channel_layer.group_send(self.group_name, {
                 "type": "agent_update",
                 "event": "building",
-                "message": f"⚙️ Начинаю реализацию ({len(tasks)} задач)...",
+                "message": step,
             })
+
+            async def on_progress(msg: str):
+                await self._set_processing(project_id, True, msg)
+                await self.channel_layer.group_send(self.group_name, {
+                    "type": "agent_update",
+                    "event": "progress",
+                    "message": msg,
+                })
 
             results = await executor_agent.execute(
                 project_id=project_id,
                 tasks=tasks,
-                on_progress=lambda msg: self.channel_layer.group_send(
-                    self.group_name,
-                    {"type": "agent_update", "event": "progress", "message": msg}
-                ),
+                on_progress=on_progress,
             )
 
             # Step 3: Summary agent writes a short human-readable summary
             summary = await summary_agent.summarize(prompt, results)
             await self._save_message(project_id, "assistant", summary)
+
+            # Clear processing state
+            await self._set_processing(project_id, False, "")
 
             # Send final summary to client
             await self.channel_layer.group_send(self.group_name, {
@@ -133,6 +150,7 @@ class ProjectConsumer(AsyncWebsocketConsumer):
 
         except Exception as e:
             logger.exception(f"Agent pipeline failed for project {project_id}: {e}")
+            await self._set_processing(project_id, False, "")
             await self.channel_layer.group_send(self.group_name, {
                 "type": "agent_update",
                 "event": "error",
@@ -140,6 +158,7 @@ class ProjectConsumer(AsyncWebsocketConsumer):
             })
 
     # ── Channel layer message handlers ─────────────────────────────────────
+
     async def agent_update(self, event):
         await self.send(json.dumps({
             "type": "agent_update",
@@ -152,6 +171,7 @@ class ProjectConsumer(AsyncWebsocketConsumer):
         await self.send(json.dumps(event))
 
     # ── DB helpers ──────────────────────────────────────────────────────────
+
     @database_sync_to_async
     def _get_project(self, project_id: str, user):
         from .models import Project
@@ -176,3 +196,12 @@ class ProjectConsumer(AsyncWebsocketConsumer):
             return ChatMessage.objects.create(project=project, role=role, content=content)
         except Project.DoesNotExist:
             return None
+
+    @database_sync_to_async
+    def _set_processing(self, project_id: str, is_processing: bool, step: str):
+        """Persist agent processing state to DB so it survives page refresh."""
+        from .models import Project
+        Project.objects.filter(id=project_id).update(
+            is_processing=is_processing,
+            processing_step=step,
+        )

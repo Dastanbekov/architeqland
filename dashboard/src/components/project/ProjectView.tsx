@@ -55,6 +55,18 @@ export function ProjectView({ project, initialPrompt, onBack }: ProjectViewProps
     if (data.type === 'project_status') {
       setStatus(data.status);
       if (data.url) setPreviewUrl(data.url);
+
+      // Restore agent processing state after page refresh
+      if (data.is_processing) {
+        setIsAgentWorking(true);
+        const step = data.processing_step || 'Агент работает...';
+        setAgentStep(step);
+        setMessages((prev) => {
+          // Only add thinking bubble if there isn't one already
+          if (prev.some((m) => m.isThinking)) return prev;
+          return [...prev, { id: 'thinking', role: 'system', content: step, isThinking: true }];
+        });
+      }
     }
 
     if (data.type === 'agent_thinking') {
