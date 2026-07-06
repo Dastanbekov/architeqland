@@ -3,7 +3,7 @@ import { Sidebar } from './components/layout/Sidebar';
 import { PromptInput } from './components/chat/PromptInput';
 import { ProjectView } from './components/project/ProjectView';
 import { Login } from './components/auth/Login';
-import { apiFetch, getAccessToken } from './services/api';
+import { apiFetch, getAccessToken, setAccessToken } from './services/api';
 import type { Project } from './services/projectsApi';
 import { listProjects, createProject } from './services/projectsApi';
 
@@ -23,7 +23,11 @@ function App() {
       }
       try {
         const response = await apiFetch('/api/apps/auth/refresh', { method: 'POST' });
-        if (response.ok) setIsAuthenticated(true);
+        if (response.ok) {
+          const data = await response.json();
+          setAccessToken(data.access);
+          setIsAuthenticated(true);
+        }
       } catch {
         // user needs to login
       }
