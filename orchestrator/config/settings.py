@@ -89,7 +89,18 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            'hosts': [f"redis://{os.environ.get('REDIS_HOST', 'redis')}:6379/0"],
+            'hosts': [{
+                'host': os.environ.get('REDIS_HOST', 'redis'),
+                'port': 6379,
+                'db': 1,  # separate DB from Celery (DB 0)
+                'socket_timeout': 30,
+                'socket_connect_timeout': 5,
+                'socket_keepalive': True,
+                'retry_on_timeout': True,
+            }],
+            'capacity': 1500,       # max messages in channel
+            'expiry': 60,           # message TTL in seconds
+            'group_expiry': 86400,  # group TTL: 24 hours
         },
     },
 }
