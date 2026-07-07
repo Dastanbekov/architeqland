@@ -3,7 +3,16 @@
 import React, { useEffect } from 'react';
 
 export function AsciiArt() {
+  const [isMounted, setIsMounted] = React.useState(false);
+  
   useEffect(() => {
+    const t = setTimeout(() => setIsMounted(true), 300);
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+
     const embedScript = document.createElement('script');
     embedScript.type = 'text/javascript';
     embedScript.textContent = `
@@ -102,14 +111,16 @@ export function AsciiArt() {
       try { document.head.removeChild(embedScript); } catch(e) {}
       try { document.head.removeChild(style); } catch(e) {}
     };
-  }, []);
+  }, [isMounted]);
 
   return (
     <div className="w-full h-full flex items-center justify-center relative z-0">
-      <div 
-        data-us-project="OMzqyUv6M3kSnv0JeAtC" 
-        style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}
-      />
+      {isMounted && (
+        <div 
+          data-us-project="OMzqyUv6M3kSnv0JeAtC" 
+          style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}
+        />
+      )}
     </div>
   );
 }

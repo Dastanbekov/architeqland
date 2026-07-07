@@ -158,6 +158,11 @@ const DelicateAsciiDots = ({
   };
 
   const animate = useCallback(() => {
+    if (!isInViewRef.current) {
+      animationFrameId.current = requestAnimationFrame(animate);
+      return;
+    }
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -196,28 +201,28 @@ const DelicateAsciiDots = ({
       speed: 1,
     };
 
+    const fixedWavesGrid = fixedWavesGridRef.current;
+
     // Calculate wave interference
     for (let y = 0; y < gridSize; y++) {
       for (let x = 0; x < gridSize; x++) {
         let totalWave = 0;
 
-        // Sum all wave contributions
-        const allWaves = wavesRef.current.concat([mouseWave]);
+        if (fixedWavesGrid && fixedWavesGrid[y] && fixedWavesGrid[y][x]) {
+          const cellWaves = fixedWavesGrid[y][x];
+          for (let i = 0; i < wavesRef.current.length; i++) {
+            const w = wavesRef.current[i];
+            const cw = cellWaves[i];
+            totalWave += Math.sin(cw.phaseOffset - timeRef.current * w.speed) * cw.ampFalloff;
+          }
+        }
 
-        allWaves.forEach((wave) => {
-          const dx = x - wave.x;
-          const dy = y - wave.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          const falloff = 1 / (1 + dist * 0.1);
-          const value =
-            Math.sin(
-              dist * wave.frequency - timeRef.current * wave.speed + wave.phase
-            ) *
-            wave.amplitude *
-            falloff;
-
-          totalWave += value;
-        });
+        // Add mouse wave
+        const dx = x - mouseWave.x;
+        const dy = y - mouseWave.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const falloff = 1 / (1 + dist * 0.1);
+        totalWave += Math.sin(dist * mouseWave.frequency - timeRef.current * mouseWave.speed + mouseWave.phase) * mouseWave.amplitude * falloff;
 
         // Add click wave influence
         const clickInfluence = getClickWaveInfluence(x, y, currentTime);
@@ -301,6 +306,9 @@ const DelicateAsciiDots = ({
     animationFrameId.current = requestAnimationFrame(animate);
   }, [backgroundColor, textColor, gridSize, animationSpeed, removeWaveLine]);
 
+  const fixedWavesGridRef = useRef<any>(null);
+  const isInViewRef = useRef(false);
+
   useEffect(() => {
     // Initialize background waves
     const waves: Wave[] = [];
@@ -319,6 +327,27 @@ const DelicateAsciiDots = ({
 
     wavesRef.current = waves;
 
+    // Precalculate wave properties per cell
+    const grid = [];
+    for (let y = 0; y < gridSize; y++) {
+      const row = [];
+      for (let x = 0; x < gridSize; x++) {
+        const cellWaves = waves.map(w => {
+          const dx = x - w.x;
+          const dy = y - w.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const falloff = 1 / (1 + dist * 0.1);
+          return {
+            phaseOffset: dist * w.frequency + w.phase,
+            ampFalloff: w.amplitude * falloff
+          };
+        });
+        row.push(cellWaves);
+      }
+      grid.push(row);
+    }
+    fixedWavesGridRef.current = grid;
+
     const canvas = canvasRef.current;
     const container = containerRef.current;
     if (!canvas || !container) return;
@@ -331,6 +360,11 @@ const DelicateAsciiDots = ({
     });
     resizeObserver.observe(container);
 
+    const intersectionObserver = new IntersectionObserver((entries) => {
+      isInViewRef.current = entries[0].isIntersecting;
+    }, { threshold: 0 });
+    intersectionObserver.observe(container);
+
     window.addEventListener('resize', resizeCanvas);
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mousedown', handleMouseDown);
@@ -341,6 +375,7 @@ const DelicateAsciiDots = ({
 
     return () => {
       resizeObserver.disconnect();
+      intersectionObserver.disconnect();
       window.removeEventListener('resize', resizeCanvas);
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mousedown', handleMouseDown);
